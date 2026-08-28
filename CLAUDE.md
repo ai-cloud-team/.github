@@ -8,6 +8,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Правила
 
-- `profile/README.md` — одно короткое описание продукта («Personal AI assistants that run in your cloud…»), ссылки на `docs` и статус проекта. Без внутренних деталей.
+- `profile/README.md` — позиционирование (D37 в `platform/docs/SYNTHESIS.md`): управляемая AI-команда разработки на разработчика, публичная схема `profile/architecture-{light,dark}.png` (генерируется из `research-local/diagrams/ai-cloud-team-public.architecture.json`). Без внутренних деталей: VK, ASM-пути, NetworkPolicy, имена namespace.
 - Reusable workflows (`.github/workflows/*.yml` с `on: workflow_call`): `helm-lint`, `kubeconform`, `python-tests`, `values-schema-check`. Пинить actions по commit SHA (Renovate `helpers:pinGitHubActionDigests`).
 - Шаблоны issue — на английском, для публичных `docs`; внутренние шаблоны инцидентов живут в `platform/incidents/`.

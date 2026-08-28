@@ -2,7 +2,14 @@
 
 **A managed AI development team for every developer in your organization — running in your cloud, on any coding agent, with a bill you can read.**
 
-You already have coding agents (Claude Code, Codex, DeepSeek Harness). What you don't have is a way to hand them to twenty developers without sharing keys, without a surprise invoice, and without finding out from the bill that one of them looped all night. ai-cloud-team is that layer. It is open, self-hostable on Kubernetes, and orchestrates third-party agents instead of shipping its own.
+Coding agents are cheap to try and expensive to run for a team: shared keys, invoices nobody can attribute, and loops that burn money overnight. ai-cloud-team gives each developer an isolated team of agents (planner, developers, reviewer, acceptance) watched by a separate supervisor, and puts into every pull request who did the work, how many cycles it took, and what it cost.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="architecture-dark.png">
+  <img alt="One developer = one isolated namespace: assistant, board, runner, team job in a disposable sandbox, LLM gateway with hard budgets, supervisor that escalates to an operator; output is a PR with a report" src="architecture-light.png">
+</picture>
+
+It is open, self-hostable on Kubernetes, and orchestrates third-party agents (Claude Code, Codex, DeepSeek Harness) instead of shipping its own.
 
 > Status: early development. Nothing below is a promise about the future — features marked *planned* do not exist yet.
 
@@ -56,6 +63,8 @@ Every piece above exists. What didn't exist is the combination an organization n
 DeepSeek Harness is alpha and breaks between versions — we pin and keep plain Claude Code as fallback. Paperclip had a CVSS 10.0 RCE in August 2026 — it runs behind default-deny network policy with no public port. The acceptance role can degrade into decoration if its output isn't measured — we log accepted/returned with reasons from day one. The supervisor costs money too and is capped by the same code as everyone else. You need a Kubernetes cluster.
 
 ## Metrics we will publish
+
+Once the platform reaches its roadmap milestones, we will build a small public product with it end to end — every PR, decision and cost visible — and report these numbers from that project (*planned*).
 
 - PRs accepted by a human without edits, %
 - Cost per accepted PR, $
