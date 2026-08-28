@@ -23,6 +23,30 @@ It is open, self-hostable on Kubernetes, and orchestrates third-party agents (Cl
 6. **Acceptance against the issue, not against green tests.** A dedicated role checks the result against the acceptance criteria written in the issue and returns it with a reason if it doesn't deliver. We will publish our own accepted-without-edits rate once we have one; until then this is a design goal, not a claim.
 7. **Same delivery, your cloud or ours.** One Helm chart. Run it in your cluster or use the hosted version (*planned*).
 
+## Engineering patterns we rely on
+
+Nothing here is novel on its own; the value is that every one of them is enforced by infrastructure or CI, not by a prompt.
+
+| Area | Pattern | Status |
+|---|---|---|
+| Cost | Tiered models per role: strong model for planning and acceptance (few tokens), cheap models for developers and the supervisor (many tokens); sub-agents always cheaper than their parent | design, PRD |
+| Cost | Prompt caching by construction: pinned CLI versions, stable prompt prefix, one model per job, staggered fan-out; semantic cache only for classification, never for agent prompts | design, PRD |
+| Cost | Hard limits before the call: virtual key per job with budget and expiry, `--max-budget-usd`, `--max-turns`, `activeDeadlineSeconds`; the gateway returns 402 instead of the model "trying to be frugal" | design, PRD |
+| Cost | Per-tenant infrastructure cost via OpenCost plus LLM usage per virtual key → one statement per developer per month | design, PRD |
+| Quality | Understand before acting: a small model turns the request into a typed `TaskSpec` using the developer's profile; one clarifying question only when a mistake is expensive | design, PRD |
+| Quality | Structured outputs everywhere (`--json-schema`), versioned prompt templates, evals in CI with statistical thresholds, LLM-as-judge on a sample; a harness or model bump that fails evals does not ship | design, PRD |
+| Quality | Cross-provider review: the reviewer runs on a different provider than the developers — better error diversity and no single prompt-injection vector | design, PRD |
+| Quality | Rollback ladder for regressions: revert template → pin model → disable tool → disable feature flag | design, PRD |
+| Safety | Disposable sandboxes: Kubernetes Jobs, no root, read-only filesystem, network egress only to the gateway; one namespace per developer with default-deny network policy and pod-security `restricted` | design, PRD |
+| Safety | No inbound traffic: Telegram long polling, Slack Socket Mode, admin UIs only behind Zero Trust; secrets via External Secrets Operator, never in Git or images | design, PRD |
+| Safety | Step-up TOTP for pairing, budget raises, and irreversible actions (pay, book, deploy, delete) | design, PRD |
+| Safety | Agent configuration treated as executable input: harness plugins, board templates and skills come only from the operator's repository | design, PRD |
+| Reliability | Durable queue with idempotent, additive migrations; a killed runner loses no task; supervisor outside the team with its own budget and minimal RBAC | design, PRD |
+| Reliability | Harness is a swappable executor behind one contract (`taskspec` in, `taskresult` out); DeepSeek Harness by default, plain Claude Code as fallback and benchmark | design, PRD |
+| Evidence | Every PR carries a machine-readable report (`actreport.v1`): roles, models, cycles, returns with reasons, supervisor interventions, cost per role. Metrics are computed from it, not from anecdotes | design, PRD |
+| Evidence | The platform will be dogfooded on its own repository and on a public demo product; failures are published with the supervisor's analysis | planned |
+| Orchestration | Task state machine in code first (SQLite-backed FSM, `waiting_approval` as an explicit state); LangGraph (`StateGraph` + checkpointer, `interrupt()` for human-in-the-loop) once a tenant runs multi-step templates with branching or ≥ 3 parallel workers | planned |
+
 ## How it works
 
 A task appears on the board (Paperclip) and is mirrored to a GitHub issue. A developer creates it from chat (Hermes Agent, Telegram) or directly on the board.
