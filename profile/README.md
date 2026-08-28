@@ -1,4 +1,4 @@
-# ai-cloud-team
+#  AI-cloud-team
 
 **A managed AI development team for every developer in your organization — running in your cloud, on any coding agent, with a bill you can read.**
 
